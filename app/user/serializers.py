@@ -7,8 +7,8 @@ from django.contrib.auth import (
 )
 from django.utils.translation import gettext as _
 
+from rest_framework.reverse import reverse
 from rest_framework import serializers
-
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object."""
@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['email', 'password', 'name']
-        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
+        extra_kwargs = {'password': {'write_only': True, 'min_length': 5,'style': {'input_type': 'password'}}}
 
     def create(self, validated_data):
         """Create and return a user with encrypted password."""
@@ -33,6 +33,19 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+class ProfileSerialier(serializers.ModelSerializer):
+    followers_url = serializers.SerializerMethodField(read_only = True)
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'name','followers_url',]
+
+    def get_followers_url(self, obj):
+        request = self.context.get("request")
+        if request is None:
+            return None
+        qs = get_user_model().objects.filter(email = obj.email)
+        return  reverse("user:followers:follower-list" , request=request) + "?" + "id=" +str(qs.first().id)
+    
 
 class AuthTokenSerializer(serializers.Serializer):
     """Serializer for the user auth token."""

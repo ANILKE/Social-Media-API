@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'core',
     'user',
+    'follower',
+    'posts',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +132,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
+
+REST_FRAMEWORK ={
+    # "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication",
+    #                                    "user.authentication.TokenAuthentication"],
+    #"DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
+    "DEFAULT_PAGINATION_CLASS": 'rest_framework.pagination.LimitOffsetPagination', 
+    "PAGE_SIZE" : 10,
+    
+}

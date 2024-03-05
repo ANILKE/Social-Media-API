@@ -33,3 +33,7 @@ class UserAdmin(BaseUserAdmin):
             }),
     )
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Followship)
+admin.site.register(models.Comment)
+admin.site.register(models.Post)
+

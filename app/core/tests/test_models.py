@@ -5,7 +5,7 @@ Tests for models.
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-
+from .. import models
 class ModelTests(TestCase):
     """Tests Models."""
     
@@ -47,3 +47,71 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_crete_followship(self):
+        """Test creating a followship between 2 users."""
+        user1 = get_user_model().objects.create_superuser(
+            'test123@example.com',
+            'testpass123',
+        )
+        user2 = get_user_model().objects.create_superuser(
+            'test1234@example.com',
+            'testpass1234',
+        )
+        followship = models.Followship.objects.create(
+            following = user1,
+            follower = user2,
+            profile_link = "aaa.aaa",
+        )
+        self.assertEqual(str(followship),"aaa.aaa")
+
+    def test_crete_post_without_comment(self):
+        """Test creating a post by a user."""
+        user1 = get_user_model().objects.create_superuser(
+            'test123@example.com',
+            'testpass123',
+        )
+        post = models.Post.objects.create(
+            owner = user1,
+            content = "I like pizza.",
+        )
+        self.assertEqual(str(post),"I like pizza.")
+    def test_crete_post_without_comment1(self):
+        """Test creating a post by a user."""
+        user1 = get_user_model().objects.create_superuser(
+            'test123@example.com',
+            'testpass123',
+        )
+        comment1 = models.Comment.objects.create(
+            owner = user1,
+            content = "I like pizza too.",
+            related_post_id = 1,
+        )
+        comment2 = models.Comment.objects.create(
+            owner = user1,
+            content = "I like pizza too too.",
+            related_post_id = 1,
+        )
+        post = models.Post.objects.create(
+            owner = user1,
+            content = "I like pizza.",
+        )
+        post.comments.add(comment1)
+        post.comments.add(comment2)
+        self.assertEqual(str(post),"I like pizza.")
+        # self.assertEqual(str(post.comments.all()),"I like pizza too.")
+        # self.assertEqual(str(post.comments.all()),"I like pizza too too.")
+
+        
+    def test_crete_comment(self):
+        """Test creatin a comment."""
+        user1 = get_user_model().objects.create_superuser(
+            'test123@example.com',
+            'testpass123',
+        )
+        comment = models.Comment.objects.create(
+            owner = user1,
+            content = "I like pizza too.",
+            related_post_id = 1,
+        )
+        self.assertEqual(str(comment),"I like pizza too.")
