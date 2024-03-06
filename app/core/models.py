@@ -64,7 +64,8 @@ class Comment(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = 'comment_owner')
     content = models.CharField(max_length =255,blank = True)
     likes = models.IntegerField(default = 0)
-    related_post_id = models.BigIntegerField()
+    liked_users = models.ManyToManyField(User, blank= True)
+    related_post_id = models.BigIntegerField(null=False,blank=False)
     
     def __str__(self):
         return self.content
@@ -74,5 +75,6 @@ class Post(models.Model):
     content = models.CharField(max_length =255,blank = True)
     likes = models.IntegerField(default = 0)
     comments = models.ManyToManyField(Comment, blank= True)
+    liked_users = models.ManyToManyField(User, blank= True)
     def __str__(self):
         return self.content

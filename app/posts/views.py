@@ -24,6 +24,13 @@ class CreatePostView(generics.CreateAPIView):
     authentication_classes = [authentication.TokenAuthentication,authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def create(self, request, *args, **kwargs):
+        """I wanted to do some stuff with serializer.data here"""
+        
+        post = Post.objects.create(owner = request.user, content= request.data['content'])
+        post.save()
+        return Response(self.serializer_class(post).data,status=status.HTTP_201_CREATED)
+
 create_post_view = CreatePostView.as_view()
 
 class listPostsView(generics.ListAPIView):
@@ -74,6 +81,7 @@ class ManagePostView(generics.RetrieveUpdateDestroyAPIView):
 manage_posts_view = ManagePostView.as_view()
 
 class ListOwnedPosts(generics.ListCreateAPIView):
+    """List the user's own posts."""
     serializer_class = PostDetailSerializer
     lookup_field = 'pk'
     authentication_classes = [authentication.TokenAuthentication,authentication.SessionAuthentication]
@@ -88,6 +96,7 @@ class ListOwnedPosts(generics.ListCreateAPIView):
 list_my_posts_view = ListOwnedPosts().as_view()
 
 class LikePostWithID(generics.RetrieveAPIView):
+    """Like a post"""
     queryset = Post.objects.all()
     serializer_class = PostDetailSerializer
     lookup_field = 'pk'
@@ -99,8 +108,9 @@ class LikePostWithID(generics.RetrieveAPIView):
             return Response( status = status.HTTP_401_UNAUTHORIZED)
         post = Post.objects.get(pk=pk)
         
-        if post is not None and request.user not in post.liked_users:
+        if post is not None and request.user not in post.liked_users.all():
             post.likes +=1
+            post.liked_users.add(request.user)
             post.save()
             qs = self.queryset.filter(pk=pk)
             return Response(data = self.serializer_class(qs.first()).data, status = status.HTTP_200_OK)

@@ -53,8 +53,52 @@ class FollowerAdmin(admin.ModelAdmin):
             ),
             }),
     )
+class PostsAdmin(admin.ModelAdmin):
+    """Define the admin pages for posts."""
+    ordering = ['id']
+    list_display = ['id','owner']
+    fieldsets = (
+        (None,{'fields': ('owner',)}),
+        (_('Post Content'),{'fields': ('content',)}),
+        (_('Post Interactions'),{'fields': ('comments','likes','liked_users')}),
+    )
+    readonly_fields = []
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',), #Page look
+            'fields': (
+                'owner',
+                'content',
+                'like',
+                'liked_users',
+            ),
+            }),
+    )
+class CommentsAdmin(admin.ModelAdmin):
+    """Define the admin pages for comments."""
+    ordering = ['id']
+    list_display = ['id','owner','related_post_id']
+    fieldsets = (
+        (None,{'fields': ('owner',)}),
+        (_('Comment Content'),{'fields': ('content',)}),
+        (_('Comment Interactions'),{'fields': ('likes','liked_users')}),
+        (_('Related Post'),{'fields': ('related_post_id',)}),
+    )
+    readonly_fields = []
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',), #Page look
+            'fields': (
+                'owner',
+                'content',
+                'like',
+                'liked_users',
+                'related_post_id',
+            ),
+            }),
+    )
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Followship,FollowerAdmin)
-admin.site.register(models.Comment)
-admin.site.register(models.Post)
+admin.site.register(models.Comment,CommentsAdmin)
+admin.site.register(models.Post,PostsAdmin)
 

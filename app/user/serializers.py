@@ -33,6 +33,19 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
+class OwnerSerializer(serializers.ModelSerializer):
+    user_profile = serializers.SerializerMethodField(read_only = True)
+    class Meta:
+        model = get_user_model()
+        fields = ['name','user_profile',]
+
+    def get_user_profile(self, obj):
+        request = self.context.get("request")
+        if request is None:
+            return  reverse("user:profile" ,kwargs={'pk': obj.id})
+        return  reverse("user:profile" ,kwargs={'pk': obj.id},  request=request)
+    
+    
 class ProfileSerialier(serializers.ModelSerializer):
     followers_url = serializers.SerializerMethodField(read_only = True)
     class Meta:

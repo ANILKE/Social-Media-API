@@ -2,10 +2,11 @@
 Views for Friendships.
 """
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status,renderers
 from rest_framework.authentication import TokenAuthentication,SessionAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+
 
 from django.shortcuts import get_object_or_404
 from .mixins import SelfUserPermissionMixin
@@ -14,12 +15,14 @@ from core.models import Followship
 
 from follower import serializers
 
-
+"""Bosken list unauth dönüyo düzelt"""
 class FollowerViewSet(viewsets.ModelViewSet):
     """View for manage Firendships APIs"""
     serializer_class = serializers.FriendshipDetailSerializer
     queryset = Followship.objects.all()
     lookup_field = 'pk' 
+    #renderer_classes = [renderers.TemplateHTMLRenderer]
+    
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
 

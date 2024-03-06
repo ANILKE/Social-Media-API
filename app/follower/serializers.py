@@ -4,11 +4,12 @@ Serializers for Friendships.
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-
+from user.serializers import OwnerSerializer
 from core.models import Followship
 
 
 class FriendshipSerializer(serializers.ModelSerializer):
+    follower = OwnerSerializer(read_only= True)
     class Meta:
         model = Followship
         fields = [

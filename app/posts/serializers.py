@@ -6,31 +6,38 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from core.models import Post
+from user.serializers import OwnerSerializer
+from comments.serializers import CommentViewSerializer
 
 
 class PostSerializer(serializers.ModelSerializer):
+    owner = OwnerSerializer(read_only= True)
     class Meta:
         model = Post
         fields = [
             'id',
             'owner',
+            'content',
+            'likes',
             ]
-        read_only_fields = ['owner']
+        read_only_fields = ['owner','likes']
         ordering_fields = ['id']
 
 class PostDetailSerializer(PostSerializer):
     fields_to_be_removed = []
+    liked_users = OwnerSerializer(read_only= True, many = True)
+    comments = CommentViewSerializer(read_only= True, many = True)
     class Meta(PostSerializer.Meta):
         fields = PostSerializer.Meta.fields +[
-            'content',
-            'likes',
             'comments',
             'liked_users'
         ]
-        read_only_fields = ['id','likes','comments','owner','liked_users']
-        extra_kwargs = {
-            #'following': {'write_only': True},
-        }
+        read_only_fields = ['id','comments','liked_users','likes','owner']
+        # extra_kwargs = {
+        #     'liked_users': {'write_only': True},
+        #     'comments': {'write_only': True},
+            
+        # }
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         for field in self.fields_to_be_removed:
