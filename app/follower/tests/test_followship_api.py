@@ -11,7 +11,7 @@ from rest_framework.test import APIClient
 
 from core.models import Followship
 
-from follower.serializers import FriendshipSerializer
+from follower.serializers import FriendshipSerializer,FriendshipDetailSerializer
 
 FOLLOWERS_URL = reverse('user:followers:follower-list')
 
@@ -35,7 +35,7 @@ class PublicFriendshipAPITest(TestCase):
     def test_auth_required(self):
         """Test auth is required call API"""
         res = self.client.get(FOLLOWERS_URL)
-        #self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         
 
@@ -58,18 +58,6 @@ class PrivateFriendshipAPITest(TestCase):
         self.client.force_authenticate(self.user)
         # self.client.force_authenticate(self.user2)
         # self.client.force_authenticate(self.user3)
-        
-
-    def test_list_friendships(self):
-        """test authenticated user API list request"""
-        create_friendship(self.user,self.user2)
-        create_friendship(self.user,self.user3)
-        create_friendship(self.user2,self.user3)
-        res = self.client.get(FOLLOWERS_URL)
-        friendships = Followship.objects.all().order_by('-id')
-        serializer = FriendshipSerializer(friendships, many=True)
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
 
     def test_retrieve_friendships_limited_to_user(self):
         """Test friends list for specific user"""
@@ -78,6 +66,6 @@ class PrivateFriendshipAPITest(TestCase):
         create_friendship(self.user2,self.user3)
         res = self.client.get(FOLLOWERS_URL)
         friendships = Followship.objects.filter(following = self.user)
-        serializer = FriendshipSerializer(friendships, many=True)
+        serializer = FriendshipDetailSerializer(friendships, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)

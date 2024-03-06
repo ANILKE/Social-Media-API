@@ -35,6 +35,15 @@ class FollowerViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(status= status.HTTP_401_UNAUTHORIZED)
+
+    def list(self,request, pk =None):
+        """List followships"""
+        qs= self.get_queryset()
+        serialized = self.serializer_class(qs,many = True)
+        if qs.exists():
+            return Response(data = serialized.data,status= status.HTTP_200_OK)
+
+        return Response(status= status.HTTP_401_UNAUTHORIZED)
         
     def update(self,serializer, pk =None):
         """ Block pdate a followship"""
@@ -51,17 +60,24 @@ class FollowerViewSet(viewsets.ModelViewSet):
         """Retrieve a friendship with pk."""
         item = get_object_or_404(self.queryset, pk=pk)
         if(item.following == request.user or item.follower == request.user):
-            serializer = self.serializer_class(item)
+            serializer = self.serializer_class(item,context={'request': request})
+
             return Response(serializer.data)
         return Response(status= status.HTTP_401_UNAUTHORIZED)
             
             
     def get_queryset(self):
         if self.request.GET.get('id') is None:
-            return self.queryset.filter(following = self.request.user).order_by('follower')
-        return self.queryset.filter(following = self.request.GET.get('id')).order_by('follower')
+            return self.queryset.filter(following = self.request.user).order_by('follower')          
+        qs = self.queryset.filter(following = self.request.GET.get('id')).order_by('follower')
+        if(self.request.GET.get('id') == str(self.request.user.id)):
+            return qs
+        if qs.filter(follower = self.request.user).exists():
+            return qs
+        return self.queryset.none() #Response(status= status.HTTP_401_UNAUTHORIZED) 
 
     def get_serialier_class(self):
+        print(self.action)
         if self.action == 'list':
             return serializers.FriendshipSerializer
         return self.serializer_class

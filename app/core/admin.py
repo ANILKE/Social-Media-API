@@ -32,8 +32,29 @@ class UserAdmin(BaseUserAdmin):
             ),
             }),
     )
+class FollowerAdmin(admin.ModelAdmin):
+    """Define the admin pages for followship."""
+    ordering = ['id']
+    list_display = ['id','following' ,'follower']
+    fieldsets = (
+        (None,{'fields': ('following','follower',)}),
+        (_('Follower User Profile'),{'fields': ('profile_link',)}),
+        (_('Important Dates'),{'fields': ('since',)}),
+    )
+    readonly_fields = ['since']
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',), #Page look
+            'fields': (
+                'follower',
+                'following',
+                'since',
+                'profile_link',
+            ),
+            }),
+    )
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Followship)
+admin.site.register(models.Followship,FollowerAdmin)
 admin.site.register(models.Comment)
 admin.site.register(models.Post)
 
