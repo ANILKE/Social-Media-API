@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follower Detail</title>
+</head>
+<body>
+    <h1>Follower Detail</h1>
+    <ul>
+        <li><strong>Followship ID:</strong> {{ id }}</li>
+        <li><strong>Follower:</strong> {{ follower.name }}</li>
+        <li><strong>Following:</strong> {{ following.name }}</li>
+        <li><strong>Since:</strong> {{ since }}</li>
+        <li><strong>Follower Profile:</strong> <a href="{{ follower_profile }}">{{ follower.name }}'s Profile</a></li>
+        <li><strong>Follower Profile:</strong> <a href="{{ following.user_profile }}">{{ following.name }}'s Profile</a></li>
+
+    </ul>
+
+
+    <form id="deleteForm" action="{% url 'user:followers:follower-detail' pk=id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="_method" value="DELETE"> <!-- This will emulate a DELETE request -->
+        <button type="submit">Delete</button>
+    </form>
+    
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+    
+            // Send the form data using fetch API or XMLHttpRequest
+            fetch(this.action, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token if needed
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // Handle success response if needed
+                window.location.href = ''; // 
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle error if needed
+            });
+        
+        });
+    </script>
+    
+     <!-- Update Button -->
+     <!-- <form action="{% url 'user:followers:follower-detail' pk=id %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Update</button>
+    </form> -->
+
+    <!-- Partial Update Form -->
+    <!-- <form id="partial-update-form">
+        {% csrf_token %}
+        <label for="new_since">New Since:</label>
+        <input type="datetime-local" id="new_since" name="new_since" required>
+        <button type="button" onclick="partialUpdate()">Partial Update</button>
+    </form>
+
+    <script>
+        function partialUpdate() {
+            const newSince = document.getElementById('new_since').value;
+            const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+            fetch("{% url 'user:followers:follower-detail' pk=id %}", {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ since: newSince })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Handle successful response
+                console.log(data);
+            })
+            .catch(error => {
+                // Handle error
+                console.error('There was an error!', error);
+            });
+        }
+    </script> -->
+</body>
+</html>

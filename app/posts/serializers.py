@@ -5,7 +5,7 @@ Serializers for Posts.
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from core.models import Post
+from core.models import Post, Comment
 from user.serializers import OwnerSerializer
 from comments.serializers import CommentViewSerializer
 
@@ -26,7 +26,7 @@ class PostSerializer(serializers.ModelSerializer):
 class PostDetailSerializer(PostSerializer):
     fields_to_be_removed = []
     liked_users = OwnerSerializer(read_only= True, many = True)
-    comments = CommentViewSerializer(read_only= True, many = True)
+    comments = CommentViewSerializer(read_only= True, many = True, required = False)
     class Meta(PostSerializer.Meta):
         fields = PostSerializer.Meta.fields +[
             'comments',
@@ -38,6 +38,18 @@ class PostDetailSerializer(PostSerializer):
         #     'comments': {'write_only': True},
             
         # }
+    def create(self, **validated_data):
+        """Create A Post"""
+        comments = validated_data.pop('comments',[])
+        post = Post.objects.create(**validated_data)
+        auth_user = self.context['request'].user
+        for comment in comments:
+            comment_obj, created = Comment.objcets.get_or_crate(
+                owner = auth_user,
+                **validated_data,
+            )
+            comment_obj.comments.add(comment_obj)
+        return post
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         for field in self.fields_to_be_removed:

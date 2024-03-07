@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile with Followers</title>
+</head>
+<body>
+    <h1>User Profile with Followers</h1>
+    <h2>User</h2>
+    <ul>
+        <li><strong>ID:</strong> {{ user.id }}</li>
+        <li><strong>Name:</strong> {{ user.name }}</li>
+        <li><strong>Email:</strong> {{ user.email }}</li>
+    </ul>
+    <h2>Followers</h2>
+    <ul>
+        {% for follower in followers%}
+
+          {% for follow in follower%}
+          <li>
+              <strong>Followship ID:</strong> {{ follow.id}}<br>
+              <strong>Follower Name:</strong> {{ follow.follower.name }}<br>
+              <strong>Follower Profile:</strong> <a href="{{ follower.user_profile }}">{{ follow.follower.user_profile }} Profile</a><br>
+              <strong>Since:</strong> {{ follow.since }}
+          </li>
+          <strong>----------------------</strong>
+          {% endfor %}
+        {% endfor %}
+    </ul>
+
+    <h2>Create Followship</h2>
+
+  
+    <form id="postForm" action="{% url 'user:followers:follower-detail' 1%}" method="POST">
+      {% csrf_token %}
+      <label for="value1">Following ID:</label><br>
+      <input type="number" id="value1" name="value1" required><br> 
+      <input type="hidden" name="_method" value="POST"> <!-- This will emulate a DELETE request -->
+      <button type="submit">Post</button>
+  </form>
+  
+  <script>
+      document.getElementById('postForm').addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the form from submitting normally
+          jsons = {};
+          jsons['follower'] = user;
+          jsons['following'] = value1;
+          // Send the form data using fetch API or XMLHttpRequest
+          fetch(this.action, {
+              method: 'POST',
+              body: jsons,
+              headers: {
+                  'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token if needed
+              }
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              // Handle success response if needed
+              window.location.href = ''; // 
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              // Handle error if needed
+          });
+      
+      });
+  </script>
+
+</body>
+</html>
