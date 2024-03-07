@@ -39,7 +39,6 @@ class ListCommentsView(generics.ListAPIView):
     lookup_field = 'pk'
     authentication_classes = [authentication.TokenAuthentication,authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
 
 list_posts_view = ListCommentsView.as_view()
 

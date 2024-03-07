@@ -21,12 +21,13 @@ class FriendshipSerializer(serializers.ModelSerializer):
 class FriendshipDetailSerializer(FriendshipSerializer):
     fields_to_be_removed = ['follower_profile']
     follower_profile = serializers.SerializerMethodField(read_only = True)
-    following = OwnerSerializer()
+    following_user = OwnerSerializer(read_only = True)
     class Meta(FriendshipSerializer.Meta):
         fields = FriendshipSerializer.Meta.fields +[
             'following',
             'since',
             'follower_profile',
+            'following_user',
         ]
         read_only_fields = ['id','follower',]
         extra_kwargs = {

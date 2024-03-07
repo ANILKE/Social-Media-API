@@ -21,7 +21,7 @@ class FollowerViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.FriendshipDetailSerializer
     queryset = Followship.objects.all()
     lookup_field = 'pk' 
-    renderer_classes = [renderers.TemplateHTMLRenderer]
+    #renderer_classes = [renderers.TemplateHTMLRenderer]
     
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -35,9 +35,9 @@ class FollowerViewSet(viewsets.ModelViewSet):
         item = get_object_or_404(self.queryset, pk=pk)
         if item.following == request.user or item.follower == request.user:
             item.delete()  
-            return Response(status=status.HTTP_204_NO_CONTENT, template_name='basic.html')
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response(status= status.HTTP_401_UNAUTHORIZED, template_name='unauthorized.html')
+        return Response(status= status.HTTP_401_UNAUTHORIZED)
 
     def list(self,request, pk =None):
         """List followships"""
@@ -52,37 +52,34 @@ class FollowerViewSet(viewsets.ModelViewSet):
         result['followers'] = converted_data,
         id = request.GET.get('id')
         if id:
-            print(id)
             user = UserSerializer(get_user_model().objects.filter(pk=id).first()).data
-            print(user)
             result['user'] = {'id':id,'name':user['name'],'email':user['email']}
         
             
         if qs.exists():
-            return Response(data = result,status= status.HTTP_200_OK, template_name='basic.html')
+            return Response(data = serialized.data,status= status.HTTP_200_OK)
 
-        return Response(status= status.HTTP_401_UNAUTHORIZED, template_name='unauthorized.html')
+        return Response(status= status.HTTP_401_UNAUTHORIZED)
         
     def update(self,serializer, pk =None):
         """ Block pdate a followship"""
         
         self.permission_classes = [IsAdminUser]
         
-        return Response(status=status.HTTP_401_UNAUTHORIZED, template_name='basic.html')   
+        return Response(status=status.HTTP_401_UNAUTHORIZED)   
     def partial_update(self,request, pk =None, **fields):
         """ Block pdate a followship"""
         self.permission_classes = [IsAdminUser]
-        return Response(status= status.HTTP_401_UNAUTHORIZED, template_name='unauthorized.html')
+        return Response(status= status.HTTP_401_UNAUTHORIZED)
     
     def retrieve(self, request, pk=None):
         """Retrieve a friendship with pk."""
         item = get_object_or_404(self.queryset, pk=pk)
         if(item.following == request.user or item.follower == request.user):
             serializer = self.serializer_class(item,context={'request': request})
-            print(serializer.data)
-            return Response(serializer.data, template_name='retrieve.html')
+            return Response(serializer.data,)
         
-        return Response(status= status.HTTP_401_UNAUTHORIZED, template_name='unauthorized.html')
+        return Response(status= status.HTTP_401_UNAUTHORIZED)
             
             
     def get_queryset(self):
