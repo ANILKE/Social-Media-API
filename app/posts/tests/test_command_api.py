@@ -34,7 +34,7 @@ class PublicPostApiTests(TestCase):
 
     def test_create_post_not_allowed_for_unauth_user(self):
         """Test creating a post with a unauthenticated user is unsuccessful."""
-        user = get_user_model().objects.create("testuser@example.com", "test123")
+        user = get_user_model().objects.create(email="testuser@example.com", password = "test123")
         payload = {
             'owner': user,
             'content': 'I like Pizza.',
@@ -43,7 +43,7 @@ class PublicPostApiTests(TestCase):
         res = self.client.post(Create_Post_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-        post = Post.objects.get(owner=payload['owner'])
+        post = Post.objects.filter(owner=payload['owner'])
         self.assertFalse(post.exists())
 
 
@@ -52,7 +52,7 @@ class PrivateUserApiTests(TestCase):
     """Test post API requests that require authentication."""
 
     def setUp(self):
-        self.user = get_user_model().objects.create("testuser@example.com", "test123")
+        self.user = get_user_model().objects.create(email="testuser@example.com", password="test123")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
     def test_create_post_with_auth_user(self):
