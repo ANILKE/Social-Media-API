@@ -76,31 +76,32 @@ class ModelTests(TestCase):
             content = "I like pizza.",
         )
         self.assertEqual(str(post),"I like pizza.")
-    def test_crete_post_without_comment1(self):
+    def test_crete_post_with_comment(self):
         """Test creating a post by a user."""
         user1 = get_user_model().objects.create_superuser(
             'test123@example.com',
             'testpass123',
         )
-        comment1 = models.Comment.objects.create(
-            owner = user1,
-            content = "I like pizza too.",
-            related_post_id = 1,
-        )
-        comment2 = models.Comment.objects.create(
-            owner = user1,
-            content = "I like pizza too too.",
-            related_post_id = 1,
-        )
         post = models.Post.objects.create(
             owner = user1,
             content = "I like pizza.",
         )
+        comment1 = models.Comment.objects.create(
+            owner = user1,
+            content = "I like pizza too.",
+            related_post_id = post.id,
+        )
+        comment2 = models.Comment.objects.create(
+            owner = user1,
+            content = "I like pizza too too.",
+            related_post_id = post.id,
+        )
+
         post.comments.add(comment1)
         post.comments.add(comment2)
         self.assertEqual(str(post),"I like pizza.")
-        # self.assertEqual(str(post.comments.all()),"I like pizza too.")
-        # self.assertEqual(str(post.comments.all()),"I like pizza too too.")
+        self.assertEqual(str(post.comments.all()[0]),"I like pizza too.")
+        self.assertEqual(str(post.comments.all()[1]),"I like pizza too too.")
 
         
     def test_crete_comment(self):
@@ -109,9 +110,13 @@ class ModelTests(TestCase):
             'test123@example.com',
             'testpass123',
         )
+        post = models.Post.objects.create(
+            owner = user1,
+            content = "I like pizza.",
+        )
         comment = models.Comment.objects.create(
             owner = user1,
             content = "I like pizza too.",
-            related_post_id = 1,
+            related_post_id = post.id,
         )
         self.assertEqual(str(comment),"I like pizza too.")

@@ -9,9 +9,14 @@ from django.contrib.auth.models import(
     BaseUserManager,
     PermissionsMixin
 )
-from rest_framework.reverse import reverse
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import fields
+
+from rest_framework.reverse import reverse
+
+
 class UserManager(BaseUserManager):
     """Manager for system users."""
 
@@ -61,11 +66,15 @@ class Followship(models.Model):
         return self.profile_link
     
 class Comment(models.Model):
+    #content_type = models.ForeignKey(ContentType, on_delete = models.CASCADE, related_name = 'type')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.CASCADE, related_name = 'comment_owner')
     content = models.CharField(max_length =255,blank = True)
     likes = models.IntegerField(default = 0)
     liked_users = models.ManyToManyField(User, blank= True)
-    related_post_id = models.BigIntegerField(null=False,blank=False)
+    related_post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name = 'related_post')
+    create_time = models.DateTimeField(default = timezone.now)
+    
+    #related_post_id = models.ForeignKey(Post, on_delete = models.CASCADE, related_name = 'comment_owner',null=False,blank=False)
     
     def __str__(self):
         return self.content
@@ -76,5 +85,6 @@ class Post(models.Model):
     likes = models.IntegerField(default = 0)
     comments = models.ManyToManyField(Comment, blank= True)
     liked_users = models.ManyToManyField(User, blank= True)
+    create_time = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return self.content

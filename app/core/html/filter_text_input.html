@@ -1,0 +1,37 @@
+{% load i18n %}
+<h3>{% blocktrans %} By {{ title }} {% endblocktrans %}</h3>
+<form method="get" action="" class="admin-filter">
+    <div style="display: flex; align-items: center;">
+        <input type="text" id="{{ title|cut:' ' }}" name="{{ title|cut:' ' }}" value="{{ request.GET.field_path }}" style="padding: 5px; margin-right: 10px; margin-left: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        <button type="submit" style="padding: 5px 10px; border-radius: 5px; background-color: #007bff; color: #fff; border: none; cursor: pointer;">{% trans 'Filter' %}</button>
+    </div>
+</form>
+<!-- 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var form = document.querySelector('.admin-filter');
+        var inputField = document.getElementById('{{ title|cut:' ' }}');
+        var submitBtn = form.querySelector('button[type="submit"]');
+    
+        submitBtn.addEventListener('click', function(event) {
+            // Prevent the default form submission behavior
+            event.preventDefault();
+    
+            // Get the value of the input field
+            var inputValue = inputField.value.trim();
+    
+            // Check if the input value is not empty
+            if (inputValue !== '') {
+                // Set the value of the input field in the form
+                inputField.value = inputValue;
+    
+                // Submit the form
+                form.submit();
+            } else {
+                // Show an alert if the input value is empty
+                alert('Please enter a value.');
+            }
+        });
+    });
+</script>
+     -->

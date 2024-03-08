@@ -1,0 +1,11 @@
+{% load i18n %}
+<h3>{% blocktrans %} By {{ title }} {% endblocktrans %}</h3>
+<form method="get" action="" class="admin-filter">
+    <div style="display: flex; align-items: center;">
+        <label for="{{ title|cut:' ' }}_min">{% trans 'From:' %}</label>
+        <input type="date" id="{{ title|cut:' ' }}_min" name="{{ title|cut:' ' }}_min" style="padding: 3px; margin-right: 5px; border-radius: 2px; border: 1px solid #ccc; width: 100px;" value="{{ request.GET.field_path_min }}">
+        <label for="{{ title|cut:' ' }}_max">{% trans 'To:' %}</label>
+        <input type="date" id="{{ title|cut:' ' }}_max" name="{{ title|cut:' ' }}_max" style="padding: 3px; margin-right: 5px; border-radius: 2px; border: 1px solid #ccc; width: 100px;" value="{{ request.GET.field_path_max }}">
+        <button type="submit" style="padding: 5px 10px; border-radius: 5px; background-color: #007bff; color: #fff; border: none; cursor: pointer;">{% trans 'Filter' %}</button>
+    </div>
+</form>

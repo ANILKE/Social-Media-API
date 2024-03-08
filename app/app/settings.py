@@ -61,7 +61,7 @@ ROOT_URLCONF = 'app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/ "follower"],
+        'DIRS': [BASE_DIR/ "core"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,10 +136,10 @@ AUTH_USER_MODEL = 'core.User'
 
 
 REST_FRAMEWORK ={
-    # "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication",
-    #                                    "user.authentication.TokenAuthentication"],
-    #"DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
-    "DEFAULT_PAGINATION_CLASS": 'rest_framework.pagination.LimitOffsetPagination', 
+    #  "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication",
+    #                                     "user.authentication.TokenAuthentication"],
+    # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
+    "DEFAULT_PAGINATION_CLASS": 'core.pagination.LinkHeaderPagination', 
     "PAGE_SIZE" : 10,
     
 }

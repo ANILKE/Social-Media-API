@@ -1,0 +1,32 @@
+{% load i18n %}
+<h3>{% blocktrans %} By {{ title }} {% endblocktrans %}</h3>
+<form id="range-filter-form" method="get" action="" class="admin-filter">
+    <div style="display: flex; align-items: center;">
+        <input type="text" id="{{ title|cut:' ' }}_min" name="{{ title|cut:' ' }}_min" placeholder="{% trans 'Min' %}" style="padding: 5px; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; width: 80px;" value="{{ request.GET.field_path_min }}">
+        <input type="text" id="{{ title|cut:' ' }}_max" name="{{ title|cut:' ' }}_max" placeholder="{% trans 'Max' %}" style="padding: 5px; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; width: 80px;" value="{{ request.GET.field_path_max }}">
+        <button type="button" id="range-filter-submit" style="padding: 5px 10px; border-radius: 5px; background-color: #007bff; color: #fff; border: none; cursor: pointer;">{% trans 'Filter' %}</button>
+    </div>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById('range-filter-form');
+    var submitBtn = document.getElementById('range-filter-submit');
+
+    submitBtn.addEventListener('click', function() {
+        var minInput = document.getElementById('{{ title|cut:' ' }}_min');
+        var maxInput = document.getElementById('{{ title|cut:' ' }}_max');
+        
+        if (minInput.value.trim() !== '' && maxInput.value.trim() !== '') {
+            if(minInput.value>maxInput.value){
+                alert('Min value needs to be smaller than max value!');
+            }
+            else{
+                form.submit();
+            }
+        } else {
+            alert('Please enter both minimum and maximum values.');
+        }
+    });
+});
+</script>

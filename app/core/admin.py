@@ -58,13 +58,17 @@ def export_excel(modeladmin,request,queryset):
 class UserAdmin(BaseUserAdmin):
     """Define the admin pages for users."""
     ordering = ['id']
-    list_display = ['email' ,'name']
+    list_display = ['email', 'name', 'last_login']
+    list_filter = [('email', utils.OwnerTextFieldListFilter), ('name',utils.OwnerTextFieldListFilter), 'is_active', 'is_superuser', 'is_staff']
+    search_fields = ['email','name']
     actions = [export_excel]
     fieldsets = (
-        (None,{'fields': ('email', 'password','name',)}),
+        (None,{'fields': ('email', 'password', 'name',)}),
         (_('Permissions'),{'fields': ('is_active', 'is_superuser','is_staff',)}),
         (_('Important Dates'),{'fields': ('last_login',)}),
     )
+    date_hierarchy = 'last_login'
+    
     readonly_fields = ['last_login']
     add_fieldsets = (
         (None, {
@@ -83,7 +87,10 @@ class UserAdmin(BaseUserAdmin):
 class FollowerAdmin(admin.ModelAdmin):
     """Define the admin pages for followship."""
     ordering = ['id']
-    list_display = ['id','following' ,'follower']
+    list_display = ['id','following' ,'follower','since','profile_link']
+    list_filter = [('follower', utils.FollowerTextFieldListFilter), ('following', utils.FollowingTextFieldListFilter), ('since',utils.SinceDateTimeRangeFilter)]
+    search_fields = ['id','following__name','following__email','follower__name','follower__email']
+    date_hierarchy = 'since'
     actions = [utils.export_to_excel_friends]
     fieldsets = (
         (None,{'fields': ('following','follower',)}),
@@ -91,6 +98,7 @@ class FollowerAdmin(admin.ModelAdmin):
         (_('Important Dates'),{'fields': ('since',)}),
     )
     readonly_fields = ['since']
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',), #Page look
@@ -105,14 +113,19 @@ class FollowerAdmin(admin.ModelAdmin):
 class PostsAdmin(admin.ModelAdmin):
     """Define the admin pages for posts."""
     ordering = ['id']
-    list_display = ['id','owner']
+    list_display = ['id','owner','content','likes','create_time']
+    list_filter = [('owner',utils.OwnerTextFieldListFilter), ('content', utils.ContentFieldListFilter), ('likes',utils.LikesRangeFieldListFilter), ('create_time',utils.DateTimeRangeFilter),]
+    search_fields = ['id','owner__name','owner__email','content']
+    date_hierarchy = 'create_time'
     actions = [utils.export_to_excel_post]
     fieldsets = (
         (None,{'fields': ('owner',)}),
         (_('Post Content'),{'fields': ('content',)}),
         (_('Post Interactions'),{'fields': ('comments','likes','liked_users')}),
+        (_('Imported Dates'),{'fields': ('create_time',)}),
     )
     readonly_fields = []
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',), #Page look
@@ -128,25 +141,30 @@ class PostsAdmin(admin.ModelAdmin):
 class CommentsAdmin(admin.ModelAdmin):
     """Define the admin pages for comments."""
     ordering = ['id']
-    list_display = ['id','owner','related_post_id']
+    list_display = ['id', 'owner', 'content', 'related_post', 'likes', 'create_time']
+    list_filter = [('owner',utils.OwnerTextFieldListFilter), ('content', utils.ContentFieldListFilter), ('likes',utils.LikesRangeFieldListFilter),('create_time',utils.DateTimeRangeFilter)]
+    search_fields = ['id','owner__name','owner__email','related_post__content','related_post__id']
+    date_hierarchy = 'create_time'
+    #date_hierarchy_drilldown = False
     actions = [utils.export_to_excel_comment]
     
     fieldsets = (
         (None,{'fields': ('owner',)}),
         (_('Comment Content'),{'fields': ('content',)}),
         (_('Comment Interactions'),{'fields': ('likes','liked_users')}),
-        (_('Related Post'),{'fields': ('related_post_id',)}),
+        (_('Related Post'),{'fields': ('related_post',)}),
+        (_('Imported Dates'),{'fields': ('create_time',)}),
     )
     readonly_fields = []
     add_fieldsets = (
         (None, {
-            'classes': ('wide',), #Page look
+            'classes': ('wide','extrapretty'), #Page look
             'fields': (
                 'owner',
                 'content',
                 'like',
                 'liked_users',
-                'related_post_id',
+                'related_post',                
             ),
             }),
     )
