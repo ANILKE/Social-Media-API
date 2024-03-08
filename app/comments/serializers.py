@@ -17,14 +17,14 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = [
             'id',
-            'related_post_id',
+            'related_post',
             'owner',
             'content',
             'likes',
             'liked_users',
             ]
         read_only_fields = ['owner','likes','id','liked_users']
-        ordering_fields = ['related_post_id']
+        ordering_fields = ['related_post']
         # extra_kwargs = {
         #     'liked_users': {'write_only': True},
         #     'comments': {'write_only': True},
@@ -53,4 +53,4 @@ class CommentViewSerializer(serializers.ModelSerializer):
             'likes',
             ]
         read_only_fields = ['owner','likes','id','liked_users']
-        ordering_fields = ['related_post_id']
+        ordering_fields = ['related_post']

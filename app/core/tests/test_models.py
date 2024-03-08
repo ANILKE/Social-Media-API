@@ -89,12 +89,12 @@ class ModelTests(TestCase):
         comment1 = models.Comment.objects.create(
             owner = user1,
             content = "I like pizza too.",
-            related_post_id = post.id,
+            related_post = post,
         )
         comment2 = models.Comment.objects.create(
             owner = user1,
             content = "I like pizza too too.",
-            related_post_id = post.id,
+            related_post = post,
         )
 
         post.comments.add(comment1)
@@ -117,6 +117,6 @@ class ModelTests(TestCase):
         comment = models.Comment.objects.create(
             owner = user1,
             content = "I like pizza too.",
-            related_post_id = post.id,
+            related_post = post,
         )
         self.assertEqual(str(comment),"I like pizza too.")

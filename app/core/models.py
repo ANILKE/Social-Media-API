@@ -74,7 +74,6 @@ class Comment(models.Model):
     related_post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name = 'related_post')
     create_time = models.DateTimeField(default = timezone.now)
     
-    #related_post_id = models.ForeignKey(Post, on_delete = models.CASCADE, related_name = 'comment_owner',null=False,blank=False)
     
     def __str__(self):
         return self.content

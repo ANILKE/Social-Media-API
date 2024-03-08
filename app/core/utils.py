@@ -322,7 +322,7 @@ def export_to_excel_comment(modeladmin, request, queryset):
     worksheet = workbook.active
     worksheet.title = 'Exported Comment Data'
     # Write headers
-    headers = ['id', 'related_post_id', 'owner', 'content', 'likes', 'liked_users']
+    headers = ['id', 'related_post', 'owner', 'content', 'likes', 'liked_users']
     worksheet.append(headers)
 
     # Write data rows
@@ -330,7 +330,7 @@ def export_to_excel_comment(modeladmin, request, queryset):
         print(obj)
         row = [
             obj['id'],
-            obj['related_post_id'],
+            obj['related_post'],
             obj['owner']['name'] if obj['owner'] else "",
             obj['content'],
             obj['likes'],
