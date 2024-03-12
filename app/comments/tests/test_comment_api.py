@@ -50,8 +50,8 @@ class PrivateCommentApiTests(TestCase):
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment1.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload)
 
@@ -66,8 +66,8 @@ class PrivateCommentApiTests(TestCase):
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment2.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload)
         comment = models.Comment.objects.get(content = payload['content'])
@@ -84,8 +84,8 @@ class PrivateCommentApiTests(TestCase):
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment3.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload)
         new_payload = {
@@ -100,15 +100,15 @@ class PrivateCommentApiTests(TestCase):
         comment = models.Comment.objects.get(content = new_payload['content'])
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(payload['owner'], comment.owner)
-        self.assertEqual(payload['related_post'], comment.related_post)
+        self.assertEqual(payload['related_post'], comment.related_post.id)
         self.assertEqual(new_payload['content'], comment.content)
     def test_delete_comment_success(self):
         """Test delete request to a comment is successful."""
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment4.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload)
         
@@ -126,18 +126,18 @@ class PrivateCommentApiTests(TestCase):
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload1 = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment5.',
+            'related_post': post.id,
         }
         payload2= {
             'owner': self.user,
-            'content': 'test comment1.',
-            'related_post': post,
+            'content': 'test comment6.',
+            'related_post': post.id,
         }
         payload3= {
             'owner': self.anotheruser,
-            'content': 'test comment for other user.',
-            'related_post': post,
+            'content': 'test comment for other user1.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload1)
         res = self.client.post(CREATE_COMMENT_URL, payload2)
@@ -158,8 +158,8 @@ class PrivateCommentApiTests(TestCase):
         post = models.Post.objects.create(owner=self.user,content='test post.')
         payload = {
             'owner': self.user,
-            'content': 'test comment.',
-            'related_post': post,
+            'content': 'test comment7.',
+            'related_post': post.id,
         }
         res = self.client.post(CREATE_COMMENT_URL, payload)
 

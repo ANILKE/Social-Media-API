@@ -19,12 +19,11 @@ class CreateCommentView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         """crete the comment wrt post ID"""
-        if not Post.objects.get(content = request.data['related_post']):
+        if Post.objects.filter(content = request.data['related_post']).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-        comment = Comment.objects.create(owner = request.user, content= request.data['content'],related_post=Post.objects.get(content = request.data['related_post']))
+        comment = Comment.objects.create(owner = request.user, content= request.data['content'],related_post=Post.objects.get(id = request.data['related_post']))
         comment.save()
-        related_post = Post.objects.get(content = request.data['related_post'])
+        related_post = Post.objects.get(id = request.data['related_post'])
         related_post.comments.add(comment.id)
         related_post.save()
         return Response(self.serializer_class(comment).data,status=status.HTTP_201_CREATED)

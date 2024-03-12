@@ -20,8 +20,20 @@ services:
       - DB_USER=devuser
       - DB_PASS=changeme
       - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - db
+      - redis
+
+  # celery:
+  #   build: .
+  #   command: celery -A app worker -l INFO
+  #   volumes:
+  #     - ./app:/app
+  #   depends_on:
+  #     - app
+  #     - redis
 
   db:
     image: postgres:13-alpine
@@ -31,6 +43,9 @@ services:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
+  
+  redis:
+    image: redis:alpine
 
 volumes:
   dev-db-data:
