@@ -22,6 +22,7 @@ services:
       - DEBUG=1
       - CELERY_BROKER=redis://redis:6379/0
       - CELERY_BACKEND=redis://redis:6379/0
+      - INVENIO_CELERY_BROKER_URL=amqp://guest:guest@mq:5672//
     depends_on:
       - db
       - redis

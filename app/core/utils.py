@@ -206,8 +206,6 @@ class DateTimeRangeFilter(admin.filters.FieldListFilter):
         self.lookup_val_max = request.GET.get(self.parameter_name+ '_max')
 
     def queryset(self, request, queryset):
-        print("asddaads")
-        print(self.lookup_val_max)
         if self.lookup_val_min and self.lookup_val_max:
             return queryset.filter(
                     **{self.field_path + '__range': (self.lookup_val_min, self.lookup_val_max)}
@@ -237,8 +235,6 @@ class SinceDateTimeRangeFilter(admin.filters.FieldListFilter):
         self.lookup_val_max = request.GET.get(self.parameter_name+ '_max')
 
     def queryset(self, request, queryset):
-        print("asddaads")
-        print(self.lookup_val_max)
         if self.lookup_val_min and self.lookup_val_max:
             return queryset.filter(
                     **{self.field_path + '__range': (self.lookup_val_min, self.lookup_val_max)}
@@ -271,7 +267,6 @@ def export_to_excel_friends(modeladmin, request, queryset):
 
     # Write data rows
     for obj in FriendshipDetailSerializer(queryset,many=True).data:
-        print(obj)
         row = [
             obj['id'],
             obj['follower']['name'] if obj['follower'] else -1,
@@ -298,7 +293,6 @@ def export_to_excel_post(modeladmin, request, queryset):
 
     # Write data rows
     for obj in PostDetailSerializer(queryset,many=True).data:
-        print(obj)
         row = [
             obj['id'],
             obj['owner']['name'] if obj['owner'] else "",
@@ -327,7 +321,6 @@ def export_to_excel_comment(modeladmin, request, queryset):
 
     # Write data rows
     for obj in CommentSerializer(queryset,many=True).data:
-        print(obj)
         row = [
             obj['id'],
             obj['related_post'],

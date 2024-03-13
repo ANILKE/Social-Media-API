@@ -45,7 +45,6 @@ def export_excel(modeladmin,request,queryset):
         for col_num, cell_value in enumerate(row.__dict__.values(), 1):
             if i != 0:
                 cell = worksheet.cell(row=row_num+1, column=col_num-1)
-                #print(cell_value)
                 if type(cell_value) == datetime.datetime:
                     cell.value = cell_value.replace(tzinfo=None)
                 else:    

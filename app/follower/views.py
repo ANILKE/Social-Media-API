@@ -46,7 +46,6 @@ class FollowerViewSet(viewsets.ModelViewSet):
         serializer_return_list = serialized.data
         converted_data = []
         for ordered_dict in serializer_return_list:
-            print(dict(ordered_dict))
             converted_data.append(dict(ordered_dict))
         result = {}
         result['followers'] = converted_data,
@@ -93,7 +92,6 @@ class FollowerViewSet(viewsets.ModelViewSet):
         return self.queryset.none() #Response(status= status.HTTP_401_UNAUTHORIZED) 
 
     def get_serialier_class(self):
-        print(self.action)
         if self.action == 'list':
             return serializers.FriendshipSerializer
         return self.serializer_class

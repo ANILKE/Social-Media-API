@@ -5,6 +5,9 @@ from rest_framework import generics, authentication, permissions
 from rest_framework.response import Response
 from rest_framework import status
 from core.models import Comment, Post
+
+from django.core.cache import cache
+from user.serializers import OwnerSerializer
 from comments.serializers import (
     CommentSerializer
 )
@@ -51,22 +54,30 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'pk'
 
     def retrieve(self, request,pk=None):
+        cached_comment = cache.get(f'comment_{pk}')
+        if cached_comment:
+            post_id = cached_comment.related_post
+            post_check = check_post_owner_by_id(post_id.id,request.user)
+            if cached_comment.owner.id == request.user.id or post_check:
+                print('cached')
+                return Response(data = self.serializer_class(cached_comment).data, status = status.HTTP_200_OK)
+            return Response( status = status.HTTP_403_FORBIDDEN)
         qs = self.queryset.filter(owner = request.user).filter(pk=pk)
         comment=self.queryset.filter(pk=pk).first()
-        post = None
+        post_check = False
         post_id = None
         if comment:
+            cache.set(f'comment_{pk}',comment)
             post_id = comment.related_post
-            post = Post.objects.filter(pk=post_id.id).first()
+            post_check = check_post_owner_by_id(post_id.id,request.user)
         else:
-            return Response( status = status.HTTP_400_BAD_REQUEST)
-        if qs.exists() or(post and post.owner==request.user):
+            return Response( status = status.HTTP_404_NOT_FOUND)
+        if qs.exists() or post_check:
             qs= self.queryset.filter(pk=pk)
             if qs.exists():
-                print(request)
                 item = self.serializer_class(qs.first())
                 return Response(data = item.data, status = status.HTTP_200_OK)
-        return Response( status = status.HTTP_401_UNAUTHORIZED)
+        return Response( status = status.HTTP_403_FORBIDDEN)
 
     def put(self, request,pk=None, *args, **kwargs):
         qs = self.queryset.filter(owner = request.user).filter(pk=pk)
@@ -110,7 +121,7 @@ class ListOwnedComments(generics.ListCreateAPIView):
 list_my_comments_view = ListOwnedComments().as_view()
 
 
-class LikePostWithID(generics.RetrieveAPIView):
+class LikeCommentWithID(generics.RetrieveAPIView):
     """Like a comment"""
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -132,6 +143,20 @@ class LikePostWithID(generics.RetrieveAPIView):
             return Response(data = self.serializer_class(qs.first()).data, status = status.HTTP_200_OK)
         return Response( status = status.HTTP_401_UNAUTHORIZED)
     
-like_a_post_view = LikePostWithID().as_view()
+like_a_comment_view = LikeCommentWithID().as_view()
 
+def check_post_owner_by_id(post_id,request_owner):
+    cached_post  = cache.get(f'post_{post_id}')
+    if cached_post:
+        print( "post cached")
+        if cached_post.owner == request_owner.id:
+            return True
+        return False
+    post = Post.objects.filter(pk=post_id).first()
+    if post :
+        print('post not cached')
+        cache.set(f'post_{post_id}',post)
+        if post.owner == request_owner:
+            return True
+    return False
 

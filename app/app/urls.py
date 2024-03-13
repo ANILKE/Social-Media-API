@@ -20,7 +20,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/',include('user.urls')),
     path('api/posts/',include('posts.urls')),
-    path('api/comments/',include('comments.urls'))
+    path('api/comments/',include('comments.urls')),
+    path('__debug__/',include('debug_toolbar.urls'))
     #path('api/follower/',include('follower.urls')),
     
 ]

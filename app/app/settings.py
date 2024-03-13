@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-erl10bai*fx%5e^a10i1+9#a&e$hzc7jd@i5sz0e2x%@f&n3+q
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+INTERNAL_IPS = ['192.168.65.1','127.0.0.1',]
 
 # Application definition
 
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'debug_toolbar',
     'core',
     'user',
     'follower',
@@ -47,6 +48,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #"django.middleware.cache.UpdateCacheMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #"django.middleware.cache.FetchFromCacheMiddleware",
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -146,12 +150,22 @@ REST_FRAMEWORK ={
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://localhost:6379/1",
+        "LOCATION": "redis://redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "db": "10",
+            "parser_class": "redis.connection.PythonParser",
+            "pool_class": "redis.BlockingConnectionPool",
         }
     }
 }
 
 CELERY_BROKER_URL = os.environ.get ("CELERY_BROKER", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get ("CELERY_BROKER", "redis://redis:6379/0")
+
+
+def show_toolbar(request):
+    return True
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
+}

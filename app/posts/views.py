@@ -8,9 +8,12 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
 from core.models import Post
-
+from user.serializers import OwnerSerializer
 from posts.serializers import (
     PostDetailSerializer,
     PostSerializer
@@ -33,6 +36,7 @@ class CreatePostView(generics.CreateAPIView):
 
 create_post_view = CreatePostView.as_view()
 
+#@method_decorator(cache_page(60 * 1), name='dispatch')
 class listPostsView(generics.ListAPIView):
     """Show the user profile"""
     
@@ -41,7 +45,6 @@ class listPostsView(generics.ListAPIView):
     lookup_field = 'pk'
     authentication_classes = [authentication.TokenAuthentication,authentication.SessionAuthentication]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
 
 list_posts_view = listPostsView.as_view()
 
@@ -54,29 +57,66 @@ class ManagePostView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'pk'
 
     def retrieve(self, request,pk=None):
-        qs = self.queryset.filter(owner = request.user).filter(pk=pk)
+        cached_post = cache.get(f'post_{pk}')
+        if cached_post:
+            if cached_post['owner'] == OwnerSerializer(request.user).data:
+                return Response(data = cached_post, status = status.HTTP_200_OK)
+            return Response( status = status.HTTP_403_FORBIDDEN)
+
+        qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            item = self.serializer_class(qs.first())
-            return Response(data = item.data, status = status.HTTP_200_OK)
-        return Response( status = status.HTTP_401_UNAUTHORIZED)
+            qs = qs.filter(owner = request.user)
+            if qs.exists():
+                item = self.serializer_class(qs.first())
+                cache.set(f'post_{pk}', item.data, timeout=60)
+                return Response(data = item.data, status = status.HTTP_200_OK)
+            return Response( status = status.HTTP_403_FORBIDDEN)
+        return Response( status = status.HTTP_404_NOT_FOUND)
 
     def put(self, request,pk=None, *args, **kwargs):
-        qs = self.queryset.filter(owner = request.user).filter(pk=pk)
+        cached_post = cache.get(f'post_{pk}')
+        if cached_post:
+            if cached_post['owner'] == OwnerSerializer(request.user).data:
+                return self.update(request, *args, **kwargs)
+        
+        qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            return self.update(request, *args, **kwargs)
-        return Response(status = status.HTTP_401_UNAUTHORIZED)
+            cache.set(f'post_{pk}', self.serializer_class(qs.first()).data, timeout=60)
+            qs = qs.filter(owner = request.user)
+            if qs.exists():
+                return self.update(request, *args, **kwargs)
+            return Response( status = status.HTTP_403_FORBIDDEN)
+
+        return Response( status = status.HTTP_404_NOT_FOUND)
     def patch(self, request,pk=None, *args, **kwargs):
-        qs = self.queryset.filter(owner = request.user).filter(pk=pk)
+        cached_post = cache.get(f'post_{pk}')
+        if cached_post:
+            if cached_post['owner'] == OwnerSerializer(request.user).data:
+                return self.update(request, *args, **kwargs)
+        
+        qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            return self.update(request, *args, **kwargs)
-        return Response(status = status.HTTP_401_UNAUTHORIZED)
+            cache.set(f'post_{pk}', self.serializer_class(qs.first()).data, timeout=60)
+            qs = qs.filter(owner = request.user)
+            if qs.exists():
+                return self.update(request, *args, **kwargs)
+            return Response( status = status.HTTP_403_FORBIDDEN)
+
+        return Response( status = status.HTTP_404_NOT_FOUND)
     def delete(self, request,pk=None, *args, **kwargs):
-        print(pk)
-        qs = self.queryset.filter(owner = request.user).filter(pk=pk)
-        print(qs)
+        cached_post = cache.get(f'post_{pk}')
+        if cached_post:
+            if cached_post['owner'] == OwnerSerializer(request.user).data:
+                return self.destroy(request, *args, **kwargs)
+        
+        qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            return self.destroy(request, *args, **kwargs)
-        return Response(status = status.HTTP_401_UNAUTHORIZED)
+            qs = qs.filter(owner = request.user)
+            if qs.exists():
+                return self.destroy(request, *args, **kwargs)
+            return Response( status = status.HTTP_403_FORBIDDEN)
+
+        return Response( status = status.HTTP_404_NOT_FOUND)
 
 manage_posts_view = ManagePostView.as_view()
 
@@ -105,7 +145,7 @@ class LikePostWithID(generics.RetrieveAPIView):
     
     def retrieve(self, request,pk=None):
         if pk is None:
-            return Response( status = status.HTTP_401_UNAUTHORIZED)
+            return Response( status = status.HTTP_404_NOT_FOUND)
         post = Post.objects.get(pk=pk)
         
         if post is not None and request.user not in post.liked_users.all():
@@ -114,7 +154,7 @@ class LikePostWithID(generics.RetrieveAPIView):
             post.save()
             qs = self.queryset.filter(pk=pk)
             return Response(data = self.serializer_class(qs.first()).data, status = status.HTTP_200_OK)
-        return Response( status = status.HTTP_401_UNAUTHORIZED)
+        return Response( status = status.HTTP_403_FORBIDDEN)
     
 like_a_post_view = LikePostWithID().as_view()
 
