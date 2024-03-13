@@ -68,7 +68,7 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
         post_check = False
         post_id = None
         if comment:
-            cache.set(f'comment_{pk}',comment)
+            cache.set(f'comment_{pk}',comment, timeout=60*5)
             post_id = comment.related_post
             post_check = check_post_owner_by_id(post_id.id,request.user)
         else:
@@ -160,7 +160,7 @@ def check_post_owner_by_id(post_id,request_owner):
     post = Post.objects.filter(pk=post_id).first()
     if post :
         print('post not cached')
-        cache.set(f'post_{post_id}',post)
+        cache.set(f'post_{post_id}',post, timeout=60*5)
         if post.owner == request_owner:
             return True
     return False

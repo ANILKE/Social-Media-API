@@ -92,7 +92,7 @@ class FollowerViewSet(viewsets.ModelViewSet):
                 print("follower list cached for self")
                 return cached_qs
             qs = self.queryset.filter(following = self.request.user).order_by('follower')  
-            cache.set(f'follow_query_set_{self.request.user.id}',qs)
+            cache.set(f'follow_query_set_{self.request.user.id}',qs, timeout=60*5)
             print("connot catch self follower list")
             return qs  
         cached_qs = cache.get(f"follow_query_set_{self.request.GET.get('id')}") 
@@ -107,12 +107,12 @@ class FollowerViewSet(viewsets.ModelViewSet):
         print("connot catch param follower list")
         
         if(self.request.GET.get('id') == str(self.request.user.id)):
-            cache.set(f'follow_query_set_{self.request.user.id}',qs)
+            cache.set(f'follow_query_set_{self.request.user.id}',q, timeout=60*5)
             print("set catch param self follower list")
             
             return qs
         if qs.filter(follower = self.request.user).exists():
-            cache.set(f"follow_query_set_{self.request.GET.get('id')}",qs)
+            cache.set(f"follow_query_set_{self.request.GET.get('id')}",qs, timeout=60*5)
             print("set catch param follower list")
             return qs
         return self.queryset.none() #Response(status= status.HTTP_401_UNAUTHORIZED) 
