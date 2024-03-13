@@ -1,6 +1,6 @@
 """
 Views for the user API.
-"""
+""" 
 from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
@@ -12,6 +12,8 @@ from user.serializers import (
     ProfileSerialier,
 )
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
+
 
 
 class CreateUserView(generics.CreateAPIView):

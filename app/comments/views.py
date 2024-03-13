@@ -29,6 +29,7 @@ class CreateCommentView(generics.CreateAPIView):
         related_post = Post.objects.get(id = request.data['related_post'])
         related_post.comments.add(comment.id)
         related_post.save()
+        cache.delete(f'post_{related_post.id}')        
         return Response(self.serializer_class(comment).data,status=status.HTTP_201_CREATED)
   
 
@@ -82,11 +83,13 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
     def put(self, request,pk=None, *args, **kwargs):
         qs = self.queryset.filter(owner = request.user).filter(pk=pk)
         if qs.exists():
+            cache.delete(f'comment{pk}')
             return self.update(request, *args, **kwargs)
         return Response(status = status.HTTP_401_UNAUTHORIZED)
     def patch(self, request,pk=None, *args, **kwargs):
         qs = self.queryset.filter(owner = request.user).filter(pk=pk)
         if qs.exists():
+            cache.delete(f'comment{pk}')
             return self.update(request, *args, **kwargs)
         return Response(status = status.HTTP_401_UNAUTHORIZED)
     def delete(self, request,pk=None, *args, **kwargs):
@@ -100,6 +103,7 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
         else:
             return Response( status = status.HTTP_400_BAD_REQUEST)
         if qs.exists() or (post and post.owner==request.user):
+            cache.delete(f'comment{pk}')
             return self.destroy(request, *args, **kwargs)
         return Response(status = status.HTTP_401_UNAUTHORIZED)
 
@@ -140,6 +144,7 @@ class LikeCommentWithID(generics.RetrieveAPIView):
             comment.liked_users.add(request.user)
             comment.save()
             qs = self.queryset.filter(pk=pk)
+            cache.delete(f'comment{pk}')
             return Response(data = self.serializer_class(qs.first()).data, status = status.HTTP_200_OK)
         return Response( status = status.HTTP_401_UNAUTHORIZED)
     

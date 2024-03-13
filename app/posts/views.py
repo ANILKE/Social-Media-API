@@ -2,14 +2,14 @@
 Views for the post API.
 """
 from rest_framework import generics, authentication, permissions
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.settings import api_settings
+# from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework.settings import api_settings
 from rest_framework.response import Response
 from rest_framework import status
 
-from django.shortcuts import get_object_or_404
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
+# from django.shortcuts import get_object_or_404
+# from django.views.decorators.cache import cache_page
+# from django.utils.decorators import method_decorator
 from django.core.cache import cache
 
 from core.models import Post
@@ -68,22 +68,24 @@ class ManagePostView(generics.RetrieveUpdateDestroyAPIView):
             qs = qs.filter(owner = request.user)
             if qs.exists():
                 item = self.serializer_class(qs.first())
-                cache.set(f'post_{pk}', item.data, timeout=60)
+                cache.set(f'post_{pk}', item.data, timeout=60*5)
                 return Response(data = item.data, status = status.HTTP_200_OK)
             return Response( status = status.HTTP_403_FORBIDDEN)
         return Response( status = status.HTTP_404_NOT_FOUND)
 
     def put(self, request,pk=None, *args, **kwargs):
+        
         cached_post = cache.get(f'post_{pk}')
         if cached_post:
             if cached_post['owner'] == OwnerSerializer(request.user).data:
+                cache.delete(f'post_{pk}')
                 return self.update(request, *args, **kwargs)
         
         qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            cache.set(f'post_{pk}', self.serializer_class(qs.first()).data, timeout=60)
             qs = qs.filter(owner = request.user)
             if qs.exists():
+                cache.delete(f'post_{pk}')
                 return self.update(request, *args, **kwargs)
             return Response( status = status.HTTP_403_FORBIDDEN)
 
@@ -92,13 +94,14 @@ class ManagePostView(generics.RetrieveUpdateDestroyAPIView):
         cached_post = cache.get(f'post_{pk}')
         if cached_post:
             if cached_post['owner'] == OwnerSerializer(request.user).data:
+                cache.delete(f'post_{pk}')
                 return self.update(request, *args, **kwargs)
         
         qs = self.queryset.filter(pk=pk)
         if qs.exists():
-            cache.set(f'post_{pk}', self.serializer_class(qs.first()).data, timeout=60)
             qs = qs.filter(owner = request.user)
             if qs.exists():
+                cache.delete(f'post_{pk}')
                 return self.update(request, *args, **kwargs)
             return Response( status = status.HTTP_403_FORBIDDEN)
 
@@ -107,12 +110,14 @@ class ManagePostView(generics.RetrieveUpdateDestroyAPIView):
         cached_post = cache.get(f'post_{pk}')
         if cached_post:
             if cached_post['owner'] == OwnerSerializer(request.user).data:
+                cache.delete(f'post_{pk}')
                 return self.destroy(request, *args, **kwargs)
         
         qs = self.queryset.filter(pk=pk)
         if qs.exists():
             qs = qs.filter(owner = request.user)
             if qs.exists():
+                cache.delete(f'post_{pk}')
                 return self.destroy(request, *args, **kwargs)
             return Response( status = status.HTTP_403_FORBIDDEN)
 
@@ -153,6 +158,7 @@ class LikePostWithID(generics.RetrieveAPIView):
             post.liked_users.add(request.user)
             post.save()
             qs = self.queryset.filter(pk=pk)
+            cache.delete(f'post_{pk}')
             return Response(data = self.serializer_class(qs.first()).data, status = status.HTTP_200_OK)
         return Response( status = status.HTTP_403_FORBIDDEN)
     
