@@ -13,29 +13,75 @@ services:
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+             python manage.py runserver 0.0.0.0:8000
+             "
     environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
       - DB_HOST=db
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
       - DEBUG=1
-      - CELERY_BROKER=redis://redis:6379/0
-      - CELERY_BACKEND=redis://redis:6379/0
-      - INVENIO_CELERY_BROKER_URL=amqp://guest:guest@mq:5672//
     depends_on:
       - db
-      - redis
+      - celery
+      - flower
+      # - kafka
 
-  # celery:
-  #   build: .
-  #   command: celery -A app worker -l INFO
+  celery:
+    build: .
+    command: celery -A app worker -l INFO --hostname=worker1@%h
+    volumes:
+      - ./app:/app
+    depends_on:
+      # - app
+      - redis
+      # - kafka
+      # - zookeeper
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - INVENIO_CELERY_BROKER_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=app.settings
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+      # - CELERY_BROKER=zookeeper://kafka:9092/0
+      # - CELERY_BACKEND=rpc://
+      # - INVENIO_CELERY_BROKER_URL=zookeeper://kafka:9092/0
+  # celery-beat:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: celery -A app beat -l info
   #   volumes:
   #     - ./app:/app
   #   depends_on:
-  #     - app
+  #     - celery
   #     - redis
 
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.4.4
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_TICK_TIME: 2000
+  #   ports:
+  #     - 22181:2181
+  
+  # kafka:
+  #   image: confluentinc/cp-kafka:7.4.4
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - 29092:29092
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
   db:
     image: postgres:13-alpine
     volumes:
@@ -44,9 +90,21 @@ services:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
-  
+    ports:
+      - "5433:5432" 
   redis:
     image: redis:alpine
+    ports:
+      - "6379:6379"
 
+  flower:
+    image: "mher/flower"
+    ports:
+      - "5555:5555"
+    depends_on:
+      - celery
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=app.settings
 volumes:
   dev-db-data:

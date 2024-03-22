@@ -13,7 +13,8 @@ from user.serializers import (
 )
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -35,10 +36,23 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         """Retrieve and return the authenticated user."""
         return self.request.user
+    def get_cache_key(self, *args, **kwargs):
+        # Generate a custom cache key based on the request's URL, query parameters, etc.
+        return f"custom_cache_key:{self.request.get_full_path()}"
 
+    @method_decorator(cache_page(60 * 2, key_prefix=''))  # Cache the page for 15 minutes
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 class ShowProfileView(SelfUserPermissionMixin,generics.RetrieveUpdateAPIView):
     """Show the user profile"""
     queryset = get_user_model().objects.all()
     serializer_class = ProfileSerialier
     lookup_field = 'pk'
+    def get_cache_key(self, *args, **kwargs):
+        # Generate a custom cache key based on the request's URL, query parameters, etc.
+        return f"custom_cache_key:{self.request.get_full_path()}"
+
+    @method_decorator(cache_page(60 * 2, key_prefix=''))  # Cache the page for 15 minutes
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 

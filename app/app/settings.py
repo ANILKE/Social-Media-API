@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,13 +139,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
 
-
-REST_FRAMEWORK ={
+REST_FRAMEWORK = {
     #  "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication",
     #                                     "user.authentication.TokenAuthentication"],
     # "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
     "DEFAULT_PAGINATION_CLASS": 'core.pagination.LinkHeaderPagination', 
-    "PAGE_SIZE" : 10,
+    "PAGE_SIZE": 10,
     
 }
 CACHES = {
@@ -160,12 +160,21 @@ CACHES = {
     }
 }
 
-CELERY_BROKER_URL = os.environ.get ("CELERY_BROKER", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get ("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER', "redis://redis:6379")
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND','redis://redis:6379')
 
-
+FLOWER_PORT = 5555
 def show_toolbar(request):
     return True
+
+
 DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
+    "SHOW_TOOLBAR_CALLBACK": show_toolbar,
 }
+
+# CELERY_BEAT_SCHEDULE = {
+#     'like-post': {
+#         'task': 'app.posts.tasks.like_post',
+#         'schedule': timedelta(seconds=60),  # Example: run every 60 seconds
+#     },
+# }
